@@ -45,7 +45,7 @@ const MapPage: React.FC = () => {
       process: 'Washed',
       flavors: ['Chocolate', 'Caramel', 'Citrus', 'Berry'],
       location: { top: '53%', left: '28%' },
-      image: '/images/colombian-farm.jpg'
+      image: '/images/ethiopian-farm.jpg'
     },
     {
       id: 'brazilian-cerrado',
@@ -56,7 +56,7 @@ const MapPage: React.FC = () => {
       process: 'Natural',
       flavors: ['Nuts', 'Chocolate', 'Caramel', 'Red Apple'],
       location: { top: '60%', left: '35%' },
-      image: '/images/brazilian-farm.jpg'
+      image: '/images/ethiopian-farm.jpg'
     },
     {
       id: 'kenyan-plateaus',
@@ -67,7 +67,7 @@ const MapPage: React.FC = () => {
       process: 'Washed',
       flavors: ['Blackcurrant', 'Tomato', 'Blackberry', 'Citrus'],
       location: { top: '45%', left: '65%' },
-      image: '/images/kenyan-farm.jpg'
+      image: '/images/ethiopian-farm.jpg'
     },
     {
       id: 'guatemalan-antigua',
@@ -78,7 +78,7 @@ const MapPage: React.FC = () => {
       process: 'Washed',
       flavors: ['Chocolate', 'Spice', 'Red Apple', 'Citrus'],
       location: { top: '47%', left: '24%' },
-      image: '/images/guatemalan-farm.jpg'
+      image: '/images/ethiopian-farm.jpg'
     },
   ];
 
@@ -111,9 +111,10 @@ const MapPage: React.FC = () => {
   const containerStyle: React.CSSProperties = {
     position: 'relative',
     width: '100%',
-    height: '100vh',
+    height: '90vh',
     overflow: 'hidden',
     background: '#faf6f2',
+    marginBottom: '50px'
   };
 
   const mapContainerStyle: React.CSSProperties = {
@@ -121,6 +122,7 @@ const MapPage: React.FC = () => {
     height: '200%',
     position: 'relative',
     backgroundImage: 'url("/images/coffee-map-bg.jpg")',
+    backgroundColor: '#e8e0d9',
     backgroundSize: 'cover',
     backgroundPosition: 'center',
     transition: mapLoaded ? 'opacity 0.6s ease' : 'none',
@@ -154,7 +156,8 @@ const MapPage: React.FC = () => {
     zIndex: 5,
     opacity: mapLoaded ? 1 : 0,
     transform: mapLoaded ? 'translateY(0)' : 'translateY(20px)',
-    transition: 'opacity 0.8s ease, transform 0.8s ease'
+    transition: 'opacity 0.8s ease, transform 0.8s ease',
+    maxWidth: '40%'
   };
 
   const titleStyle: React.CSSProperties = {
@@ -220,8 +223,8 @@ const MapPage: React.FC = () => {
     transform: 'rotate(90deg)',
     transformOrigin: 'left bottom',
     position: 'absolute',
-    left: '15px',
-    top: '45px',
+    left: '-10px',
+    top: '-10px',
     fontWeight: 'bold'
   };
 

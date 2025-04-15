@@ -11,6 +11,7 @@ import MapPage from './pages/MapPage'
 const Home = () => (
   <>
     <Hero />
+    <MapPage />
     <FeaturedProducts />
   </>
 )
