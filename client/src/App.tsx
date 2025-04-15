@@ -5,6 +5,7 @@ import Header from './components/layout/Header'
 import Hero from './components/sections/Hero'
 import FeaturedProducts from './components/sections/FeaturedProducts'
 import VineyardMap from './components/pages/VineyardMap'
+import MapPage from './pages/MapPage'
 
 // Create basic page components 
 const Home = () => (
@@ -242,6 +243,7 @@ function App() {
               <Route path="/cart" element={<Cart />} />
               <Route path="/checkout" element={<Checkout />} />
               <Route path="/origins" element={<VineyardMap />} />
+              <Route path="/map" element={<MapPage />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
