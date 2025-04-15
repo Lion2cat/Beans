@@ -418,12 +418,14 @@ const MapPage: React.FC = () => {
         targetSectionId="products-section"
         isVisible={scrolled}
         text="Discover our products"
+        position="bottom"
+        color="#5C3D2E"
       />
 
       <motion.div
         style={{
           position: 'absolute',
-          bottom: '2rem',
+          bottom: '8rem',
           left: '2rem',
           padding: '1.2rem 1.5rem',
           background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.7))',

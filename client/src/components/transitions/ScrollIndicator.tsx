@@ -32,14 +32,18 @@ const ScrollIndicator: React.FC<ScrollIndicatorProps> = ({
       className="scroll-indicator"
       style={{
         position: 'absolute',
-        [position]: '30px',
-        left: '50%',
+        [position]: position === 'bottom' ? '60px' : '30px',
+        left: '45%',
         transform: 'translateX(-50%)',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
         zIndex: 5,
         cursor: 'pointer',
+        backgroundColor: 'rgba(255, 255, 255, 0.4)',
+        backdropFilter: 'blur(3px)',
+        padding: '8px 15px',
+        borderRadius: '20px',
       }}
       initial={{ opacity: 0, y: position === 'bottom' ? 20 : -20 }}
       animate={{ 

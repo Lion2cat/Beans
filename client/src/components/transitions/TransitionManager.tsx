@@ -138,16 +138,17 @@ const TransitionManager: React.FC = () => {
           
           {/* Add scroll indicators where appropriate */}
           {section.nextSectionId && section.inView && section.progress < 0.8 && (
-            <ScrollIndicator
-              targetSectionId={section.nextSectionId}
-              isVisible={section.inView}
-              text={
-                section.id === 'hero-section' ? 'Discover our story' :
-                section.id === 'about-section' ? 'See our products' :
-                section.id === 'map-section' ? 'Discover our products' :
-                'Continue exploring'
-              }
-            />
+            section.id !== 'hero-section' && (
+              <ScrollIndicator
+                targetSectionId={section.nextSectionId}
+                isVisible={section.inView}
+                text={
+                  section.id === 'about-section' ? 'See our products' :
+                  section.id === 'map-section' ? 'Discover our products' :
+                  'Continue exploring'
+                }
+              />
+            )
           )}
         </React.Fragment>
       ))}

@@ -139,24 +139,26 @@ const ProductCard = ({ product, index, isActive }: { product: typeof products[0]
   }
   
   return (
-    <div ref={cardRef} style={cardStyle} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
-      <div style={imageContainerStyle}>
+    <div ref={cardRef} style={cardStyle} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave} className="bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-300">
+      <div style={imageContainerStyle} className="overflow-hidden">
         <img
           ref={imageRef}
           src={product.image}
           alt={product.name}
           style={imageStyle}
+          className="object-contain w-full h-[330px] p-2.5 transition-transform duration-700"
         />
       </div>
-      <div style={contentStyle}>
-        <h3 style={productTitleStyle}>{product.name}</h3>
-        <p style={descStyle}>{product.description}</p>
-        <div style={footerStyle}>
-          <span style={priceStyle}>{product.price}</span>
+      <div style={contentStyle} className="p-5">
+        <h3 style={productTitleStyle} className="text-xl font-semibold text-gray-800 mb-2">{product.name}</h3>
+        <p style={descStyle} className="text-sm text-gray-600 mb-4 leading-relaxed">{product.description}</p>
+        <div style={footerStyle} className="flex justify-between items-center border-t border-gray-100 py-3 px-5 bg-gray-50">
+          <span style={priceStyle} className="text-2xl font-bold text-amber-900">{product.price}</span>
           <button 
             style={buttonStyle}
             onMouseOver={handleMouseOver}
             onMouseOut={handleMouseOut}
+            className="bg-amber-800 text-white px-6 py-3 text-sm uppercase tracking-wider font-medium transition-all hover:bg-amber-900 hover:-translate-y-0.5"
           >
             Add to Cart
           </button>
@@ -262,13 +264,16 @@ const FeaturedProducts = () => {
     padding: '80px 0 80px 0',
     backgroundColor: '#f7f5f3',
     position: 'relative',
-    overflow: 'hidden'
+    overflow: 'hidden',
+    backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'20\' height=\'20\' viewBox=\'0 0 20 20\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'%23a05c4a\' fill-opacity=\'0.05\' fill-rule=\'evenodd\'%3E%3Ccircle cx=\'3\' cy=\'3\' r=\'3\'/%3E%3Ccircle cx=\'13\' cy=\'13\' r=\'3\'/%3E%3C/g%3E%3C/svg%3E")',
   }
   
   const containerStyle: React.CSSProperties = {
     maxWidth: '1200px',
     margin: '0 auto',
-    padding: '0 20px'
+    padding: '0 20px',
+    position: 'relative',
+    zIndex: 2,
   }
   
   const titleContainerStyle: React.CSSProperties = {
@@ -286,7 +291,8 @@ const FeaturedProducts = () => {
     fontFamily: '"Playfair Display", serif',
     position: 'relative',
     transition: 'transform 0.8s ease-out, opacity 0.8s ease-out',
-    willChange: 'transform, opacity'
+    willChange: 'transform, opacity',
+    textShadow: '0 2px 10px rgba(255, 255, 255, 0.8)'
   }
   
   const gridStyle: React.CSSProperties = {
@@ -324,16 +330,35 @@ const FeaturedProducts = () => {
     transition: 'opacity 0.8s ease',
   }
   
+  // Additional background elements for visual interest
+  const backgroundPatternStyle: React.CSSProperties = {
+    position: 'absolute',
+    bottom: '0',
+    left: '0',
+    width: '100%',
+    height: '100%',
+    opacity: 0.15,
+    backgroundImage: 'url("/images/coffee-beans-pattern.svg")',
+    backgroundSize: '300px',
+    backgroundRepeat: 'repeat',
+    pointerEvents: 'none',
+    zIndex: 1,
+  }
+  
   return (
-    <section ref={sectionRef} style={sectionStyle}>
+    <section ref={sectionRef} style={sectionStyle} className="bg-gradient-to-b from-amber-50 to-orange-50 py-20">
       {/* Decorative transition element */}
       <div style={decorativeElementStyle} />
       
-      <div style={containerStyle}>
-        <div style={titleContainerStyle}>
-          <h2 ref={titleRef} style={sectionTitleStyle}>Our Featured Beans</h2>
+      {/* Background pattern */}
+      <div style={backgroundPatternStyle} className="opacity-15 bg-repeat" />
+      
+      <div style={containerStyle} className="relative z-10 max-w-6xl mx-auto px-4">
+        <div style={titleContainerStyle} className="text-center mb-12">
+          <h2 ref={titleRef} style={sectionTitleStyle} className="text-4xl font-semibold text-amber-900 font-serif">Our Featured Beans</h2>
+          <p className="text-center mt-4 text-amber-800/70 max-w-2xl mx-auto">Carefully selected premium coffee beans from the world's finest growing regions.</p>
         </div>
-        <div style={gridStyle}>
+        <div style={gridStyle} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {products.map((product, index) => (
             <ProductCard 
               key={product.id} 

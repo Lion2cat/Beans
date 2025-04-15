@@ -145,13 +145,6 @@ const Hero = () => {
           Explore Our Menu
         </button>
       </div>
-      
-      {/* Add scroll indicator to guide to next section */}
-      <ScrollIndicator 
-        targetSectionId="map-section"
-        isVisible={scrolled}
-        text="Discover our origins"
-      />
     </section>
   )
 }
