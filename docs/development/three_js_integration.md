@@ -1,4 +1,4 @@
-# Three.js Integration Guide
+ # Three.js Integration Guide
 
 This document outlines potential integration points and implementation strategies for adding Three.js 3D visualizations to the Beans Coffee Shop website.
 
@@ -464,4 +464,4 @@ For mobile devices, consider these adjustments:
 
 This guide provides a starting point for implementing Three.js in your coffee shop website. The specific creative implementation is left to you, allowing for artistic freedom while maintaining the technical structure needed for a smooth user experience.
 
-Remember that 3D elements should enhance the user experience without overwhelming it—subtle, thoughtful implementations will create the most impressive results. 
+Remember that 3D elements should enhance the user experience without overwhelming it—subtle, thoughtful implementations will create the most impressive results.
