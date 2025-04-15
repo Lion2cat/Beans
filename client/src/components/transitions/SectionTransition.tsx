@@ -38,6 +38,9 @@ const SectionTransition: React.FC<SectionTransitionProps> = ({
         bottom: '-60px',
         height: '120px',
         backgroundImage: 'linear-gradient(to bottom, #FBF7F3, #f7f5f3)',
+        backdropFilter: 'blur(8px)',
+        WebkitBackdropFilter: 'blur(8px)',
+        boxShadow: '0 -10px 30px rgba(251, 247, 243, 0.8)',
       };
     }
     
@@ -48,6 +51,9 @@ const SectionTransition: React.FC<SectionTransitionProps> = ({
         top: '-60px',
         height: '120px',
         backgroundImage: 'linear-gradient(to top, #f7f5f3, #FBF7F3)',
+        backdropFilter: 'blur(8px)',
+        WebkitBackdropFilter: 'blur(8px)',
+        boxShadow: '0 10px 30px rgba(247, 245, 243, 0.8)',
       };
     }
     

@@ -101,6 +101,11 @@ const SectionWrapper = ({ children, id }: { children: React.ReactNode, id: strin
         ...(id === 'map-section' ? { bottom: '-60px' } : { top: '-60px' }),
         opacity: isInView ? 1 : 0,
         transition: 'opacity 0.8s ease',
+        backdropFilter: 'blur(8px)',
+        WebkitBackdropFilter: 'blur(8px)',
+        boxShadow: id === 'map-section' 
+          ? '0 -10px 30px rgba(251, 247, 243, 0.8)'
+          : '0 10px 30px rgba(247, 245, 243, 0.8)',
       }
     }
     return {}
@@ -232,7 +237,17 @@ const Home = () => {
 }
 
 const About = () => <div>About Page</div>
-const Products = () => <div>Products Page</div>
+
+const Products = () => {
+  return (
+    <div className="products-page">
+      <SectionWrapper id="products-section">
+        <FeaturedProducts />
+      </SectionWrapper>
+    </div>
+  )
+}
+
 const ProductDetail = () => <div>Product Detail Page</div>
 const Cart = () => <div>Cart Page</div>
 const Checkout = () => <div>Checkout Page</div>

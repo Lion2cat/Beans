@@ -305,7 +305,7 @@ const Header = () => {
   }
   
   const navLinks = [
-    { path: '/menu', label: 'Menu' },
+    { path: '/#products-section', label: 'Menu' },
     { path: '/about', label: 'About' },
     { path: '/contact', label: 'Contact' }
   ]
@@ -331,13 +331,31 @@ const Header = () => {
         {/* 桌面导航 */}
         <nav style={navStyle as any}>
           {navLinks.map((link) => (
-            <Link 
-              key={link.path}
-              to={link.path}
-              style={{ ...navLinkStyle, ...linkHoverStyle } as any}
-            >
-              {link.label}
-            </Link>
+            link.path.startsWith('/#') ? (
+              <a 
+                key={link.path}
+                href={link.path}
+                style={{ ...navLinkStyle, ...linkHoverStyle } as any}
+                onClick={(e) => {
+                  e.preventDefault();
+                  const targetId = link.path.replace('/#', '');
+                  const targetElement = document.getElementById(targetId);
+                  if (targetElement) {
+                    targetElement.scrollIntoView({ behavior: 'smooth' });
+                  }
+                }}
+              >
+                {link.label}
+              </a>
+            ) : (
+              <Link 
+                key={link.path}
+                to={link.path}
+                style={{ ...navLinkStyle, ...linkHoverStyle } as any}
+              >
+                {link.label}
+              </Link>
+            )
           ))}
         </nav>
         
@@ -351,14 +369,33 @@ const Header = () => {
       {menuOpen && (
         <div style={mobileMenuStyle as any}>
           {navLinks.map((link) => (
-            <Link
-              key={link.path}
-              to={link.path}
-              style={{ ...navLinkStyle, ...linkHoverStyle } as any}
-              onClick={() => setMenuOpen(false)}
-            >
-              {link.label}
-            </Link>
+            link.path.startsWith('/#') ? (
+              <a 
+                key={link.path}
+                href={link.path}
+                style={{ ...navLinkStyle, ...linkHoverStyle } as any}
+                onClick={(e) => {
+                  e.preventDefault();
+                  const targetId = link.path.replace('/#', '');
+                  const targetElement = document.getElementById(targetId);
+                  if (targetElement) {
+                    setMenuOpen(false);
+                    targetElement.scrollIntoView({ behavior: 'smooth' });
+                  }
+                }}
+              >
+                {link.label}
+              </a>
+            ) : (
+              <Link
+                key={link.path}
+                to={link.path}
+                style={{ ...navLinkStyle, ...linkHoverStyle } as any}
+                onClick={() => setMenuOpen(false)}
+              >
+                {link.label}
+              </Link>
+            )
           ))}
         </div>
       )}
