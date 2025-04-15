@@ -3,21 +3,21 @@ import { useEffect, useRef, useState, useCallback } from 'react'
 const products = [
   {
     id: 1,
-    name: 'Ethiopian Yirgacheffe',
+    name: 'ETHIOPIA Alo',
     description: 'Bright and floral with notes of citrus and jasmine',
     price: '$18.99',
     image: '/images/ethiopian.jpg'
   },
   {
     id: 2,
-    name: 'Colombian Supremo',
+    name: 'COLOMBIA Negrita',
     description: 'Rich and balanced with hints of chocolate and nuts',
     price: '$16.99',
     image: '/images/colombian.jpg'
   },
   {
     id: 3,
-    name: 'Kenyan AA',
+    name: 'PANAMA',
     description: 'Bold and fruity with a wine-like acidity',
     price: '$19.99',
     image: '/images/kenyan.jpg'
@@ -338,8 +338,8 @@ const FeaturedProducts = () => {
     width: '100%',
     height: '100%',
     opacity: 0.15,
-    backgroundImage: 'url("/images/coffee-beans-pattern.svg")',
-    backgroundSize: '300px',
+    backgroundImage: 'radial-gradient(#a05c4a 2px, transparent 2px)',
+    backgroundSize: '30px 30px',
     backgroundRepeat: 'repeat',
     pointerEvents: 'none',
     zIndex: 1,
@@ -351,12 +351,11 @@ const FeaturedProducts = () => {
       <div style={decorativeElementStyle} />
       
       {/* Background pattern */}
-      <div style={backgroundPatternStyle} className="opacity-15 bg-repeat" />
+      <div style={backgroundPatternStyle} className="opacity-15" />
       
       <div style={containerStyle} className="relative z-10 max-w-6xl mx-auto px-4">
         <div style={titleContainerStyle} className="text-center mb-12">
           <h2 ref={titleRef} style={sectionTitleStyle} className="text-4xl font-semibold text-amber-900 font-serif">Our Featured Beans</h2>
-          <p className="text-center mt-4 text-amber-800/70 max-w-2xl mx-auto">Carefully selected premium coffee beans from the world's finest growing regions.</p>
         </div>
         <div style={gridStyle} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {products.map((product, index) => (

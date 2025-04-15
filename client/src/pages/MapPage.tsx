@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { motion, useMotionValue, AnimatePresence } from 'framer-motion';
+import { motion, useMotionValue, AnimatePresence, PanInfo } from 'framer-motion';
 import { createGlobalStyle } from 'styled-components';
 import ScrollIndicator from '../components/transitions/ScrollIndicator';
 
@@ -31,6 +31,16 @@ const MapPage: React.FC = () => {
   const [startPosition, setStartPosition] = useState({ x: 0, y: 0 })
   const [translatePosition, setTranslatePosition] = useState({ x: 0, y: 0 })
   const [scrolled, setScrolled] = useState(false)
+  const [autoMoveDirection, setAutoMoveDirection] = useState({ x: 0.2, y: 0.1 })
+  const [targetAutoMoveDirection, setTargetAutoMoveDirection] = useState({ x: 0.2, y: 0.1 })
+  const lastDirectionChangeRef = useRef(Date.now())
+  const animationRef = useRef<number | null>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [mapPosition, setMapPosition] = useState({ x: -250, y: -250 })
+  const mapBoundsRef = useRef({ 
+    minX: -500, maxX: 0, 
+    minY: -500, maxY: 0 
+  })
 
   // Sample coffee regions data with more detailed information
   const regions: CoffeeRegion[] = [
@@ -145,16 +155,18 @@ const MapPage: React.FC = () => {
     left: region.location.left,
     width: selectedRegion === region.id ? '45px' : '35px',
     height: selectedRegion === region.id ? '45px' : '35px',
-    borderRadius: '50%',
+    borderRadius: '0',
     backgroundColor: selectedRegion === region.id ? '#5d342f' : '#a05c4a',
     border: '3px solid #fff',
-    transform: `translate(-50%, -50%) scale(${mapLoaded ? 1 : 0})`,
+    transform: `translate(-50%, -50%) scale(${mapLoaded ? 1 : 0}) rotate(15deg)`,
     transformOrigin: 'center',
     cursor: 'pointer',
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    boxShadow: selectedRegion === region.id ? '0 0 0 8px rgba(93, 52, 47, 0.3)' : '0 4px 15px rgba(0,0,0,0.25)',
+    boxShadow: selectedRegion === region.id 
+      ? '0 0 0 8px rgba(93, 52, 47, 0.3), 4px 4px 8px rgba(0,0,0,0.2)' 
+      : '4px 4px 8px rgba(0,0,0,0.2)',
     zIndex: selectedRegion === region.id ? 3 : 2,
     transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
   });
@@ -315,6 +327,137 @@ const MapPage: React.FC = () => {
     return () => window.removeEventListener('scroll', handleParallax)
   }, [])
 
+  // Calculate map boundaries when loaded
+  useEffect(() => {
+    if (mapLoaded && containerRef.current) {
+      const containerWidth = containerRef.current.clientWidth;
+      const containerHeight = containerRef.current.clientHeight;
+      
+      // 设置更合理的边界值，使地图可以居中显示
+      mapBoundsRef.current = {
+        minX: -containerWidth,
+        maxX: 0,
+        minY: -containerHeight,
+        maxY: 0
+      };
+      
+      // 初始化到地图中央位置
+      const centerX = -containerWidth / 2;
+      const centerY = -containerHeight / 2;
+      x.set(centerX);
+      y.set(centerY);
+      setMapPosition({ x: centerX, y: centerY });
+    }
+  }, [mapLoaded]);
+
+  // Smooth auto-move effect using requestAnimationFrame
+  useEffect(() => {
+    const animateMapMovement = () => {
+      // 仅在非拖动状态下移动
+      if (!isDragging) {
+        // Calculate new position with bounds checking
+        const newX = Math.max(
+          mapBoundsRef.current.minX,
+          Math.min(mapBoundsRef.current.maxX, x.get() + autoMoveDirection.x)
+        );
+        const newY = Math.max(
+          mapBoundsRef.current.minY,
+          Math.min(mapBoundsRef.current.maxY, y.get() + autoMoveDirection.y)
+        );
+        
+        // Update position with smooth animation
+        x.set(newX);
+        y.set(newY);
+        
+        // Update React state
+        setMapPosition({ x: newX, y: newY });
+      }
+      
+      // Continue animation loop
+      animationRef.current = requestAnimationFrame(animateMapMovement);
+    };
+    
+    // Start animation
+    animationRef.current = requestAnimationFrame(animateMapMovement);
+    
+    // Cleanup
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+    };
+  }, [isDragging, autoMoveDirection]);
+
+  // Handle dragging interaction
+  const handleDragStart = () => {
+    setIsDragging(true);
+    // 暂停方向变化
+    setAutoMoveDirection({ x: 0, y: 0 });
+    setTargetAutoMoveDirection({ x: 0, y: 0 });
+  };
+
+  const handleDrag = (event: MouseEvent | PointerEvent | TouchEvent, info: PanInfo) => {
+    // 拖动时只更新位置，不应用自动移动
+    const currentX = x.get();
+    const currentY = y.get();
+    
+    // Update the map position as it's being dragged
+    const newX = Math.max(
+      mapBoundsRef.current.minX,
+      Math.min(mapBoundsRef.current.maxX, currentX + info.delta.x)
+    );
+    const newY = Math.max(
+      mapBoundsRef.current.minY,
+      Math.min(mapBoundsRef.current.maxY, currentY + info.delta.y)
+    );
+    
+    x.set(newX);
+    y.set(newY);
+    
+    // Update React state for the animate property
+    setMapPosition({ x: newX, y: newY });
+  };
+
+  const handleDragEnd = (event: MouseEvent | PointerEvent | TouchEvent, info: PanInfo) => {
+    setIsDragging(false);
+    
+    // When user releases, ensure position is within bounds
+    const newX = Math.max(
+      mapBoundsRef.current.minX,
+      Math.min(mapBoundsRef.current.maxX, x.get())
+    );
+    const newY = Math.max(
+      mapBoundsRef.current.minY,
+      Math.min(mapBoundsRef.current.maxY, y.get())
+    );
+    
+    x.set(newX);
+    y.set(newY);
+    
+    // Update the state for React rendering
+    setMapPosition({ x: newX, y: newY });
+    
+    // 设置极缓慢的移动速度，根据用户拖动方向
+    if (Math.abs(info.velocity.x) > 0 || Math.abs(info.velocity.y) > 0) {
+      // 使用非常小的乘数，确保移动极其缓慢
+      const velocityFactor = 0.002; // 极缓慢
+      setAutoMoveDirection({
+        x: info.velocity.x > 0 ? velocityFactor : (info.velocity.x < 0 ? -velocityFactor : 0),
+        y: info.velocity.y > 0 ? velocityFactor : (info.velocity.y < 0 ? -velocityFactor : 0)
+      });
+      
+      // 确保目标方向与当前方向一致，避免突然变化
+      setTargetAutoMoveDirection({
+        x: info.velocity.x > 0 ? velocityFactor : (info.velocity.x < 0 ? -velocityFactor : 0),
+        y: info.velocity.y > 0 ? velocityFactor : (info.velocity.y < 0 ? -velocityFactor : 0)
+      });
+    } else {
+      // 无明显方向时保持微小移动
+      setAutoMoveDirection({ x: 0.002, y: 0.001 });
+      setTargetAutoMoveDirection({ x: 0.002, y: 0.001 });
+    }
+  };
+
   return (
     <div 
       ref={mapRef}
@@ -382,29 +525,46 @@ const MapPage: React.FC = () => {
       </div>
 
       <motion.div
-        ref={constraintsRef}
+        ref={containerRef}
         style={{ width: '100%', height: '100%', overflow: 'hidden' }}
       >
         <motion.div
           drag
-          dragConstraints={constraintsRef}
+          dragConstraints={containerRef}
           style={mapContainerStyle}
-          initial={{ x: 0, y: 0 }}
-          animate={{ x: x.get(), y: y.get() }}
+          initial={{ x: -250, y: -250 }} // 初始位置设为中心
+          animate={{ 
+            x: mapPosition.x,
+            y: mapPosition.y
+          }}
+          onDragStart={handleDragStart}
+          onDrag={handleDrag}
+          onDragEnd={handleDragEnd}
+          transition={{
+            type: "tween",
+            duration: 0.8, // 更慢的过渡
+            ease: "linear" // 线性缓动，更平滑
+          }}
         >
           {regions.map((region) => (
             <motion.div
               key={region.id}
               className="region-marker"
               style={markerStyle(region)}
-              whileHover={{ scale: 1.2 }}
+              whileHover={{ scale: 1.2, rotate: 0 }}
               onClick={() => setSelectedRegion(region.id)}
             >
               <motion.span
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.2 }}
-                style={{ color: 'white', fontWeight: 'bold', fontSize: '10px' }}
+                style={{ 
+                  color: 'white', 
+                  fontWeight: 'bold', 
+                  fontSize: '10px',
+                  transform: 'rotate(-15deg)',
+                  pointerEvents: 'none'
+                }}
               >
                 {region.name.charAt(0)}
               </motion.span>
@@ -611,20 +771,21 @@ const MapStyles = createGlobalStyle`
   
   .region-marker {
     position: absolute;
-    width: 24px;
-    height: 24px;
-    transform: translate(-50%, -50%);
-    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    transform: translate(-50%, -50%) rotate(15deg);
+    border-radius: 0;
     background-color: #A05C4A;
     border: 2px solid #FFFFFF;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 4px 4px 8px rgba(0,0,0,0.15);
+    transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
     z-index: 2;
   }
   
   .region-marker:hover {
-    transform: translate(-50%, -50%) scale(1.2);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    transform: translate(-50%, -50%) scale(1.1) rotate(0deg);
+    box-shadow: 6px 6px 12px rgba(0,0,0,0.2);
+    background-color: #5d342f;
   }
   
   .region-marker::after {
@@ -634,53 +795,30 @@ const MapStyles = createGlobalStyle`
     left: 50%;
     width: 40px;
     height: 40px;
-    border-radius: 50%;
+    border-radius: 0;
+    transform: translate(-50%, -50%) scale(0) rotate(-15deg);
     background-color: rgba(160, 92, 74, 0.2);
-    transform: translate(-50%, -50%) scale(0);
     transition: transform 0.6s ease;
   }
   
   .region-marker:hover::after {
-    transform: translate(-50%, -50%) scale(1);
-  }
-  
-  .region-info {
-    position: absolute;
-    background-color: #FFFFFF;
-    border-radius: 8px;
-    padding: 12px 16px;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
-    width: 220px;
-    opacity: 0;
-    transform: translateY(10px);
-    transition: opacity 0.3s ease, transform 0.3s ease;
-    pointer-events: none;
-    z-index: 3;
-  }
-  
-  .region-marker:hover + .region-info {
-    opacity: 1;
-    transform: translateY(0);
+    transform: translate(-50%, -50%) scale(1) rotate(-15deg);
   }
   
   /* Animation for entry/exit */
   @keyframes fadeInMap {
     from {
       opacity: 0;
-      transform: translateY(30px);
+      transform: translateY(30px) rotate(15deg);
     }
     to {
       opacity: 1;
-      transform: translateY(0);
+      transform: translateY(0) rotate(15deg);
     }
   }
   
-  .map-container {
+  .region-marker {
     animation: fadeInMap 1.2s ease forwards;
-  }
-  
-  [data-scroll-progress] .map-wrapper {
-    transition: transform 0.8s cubic-bezier(0.25, 0.1, 0.25, 1);
   }
 `
 
