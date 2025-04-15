@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 const products = [
   {
@@ -6,25 +6,25 @@ const products = [
     name: 'Ethiopian Yirgacheffe',
     description: 'Bright and floral with notes of citrus and jasmine',
     price: '$18.99',
-    image: '/images/ethiopian.jpg' // 使用现有图片作为占位符
+    image: '/images/ethiopian.jpg'
   },
   {
     id: 2,
     name: 'Colombian Supremo',
     description: 'Rich and balanced with hints of chocolate and nuts',
     price: '$16.99',
-    image: '/images/colombian.jpg' // 使用现有图片作为占位符
+    image: '/images/colombian.jpg'
   },
   {
     id: 3,
     name: 'Kenyan AA',
     description: 'Bold and fruity with a wine-like acidity',
     price: '$19.99',
-    image: '/images/kenyan.jpg' // 使用现有图片作为占位符
+    image: '/images/kenyan.jpg'
   }
 ]
 
-const ProductCard = ({ product, index }: { product: typeof products[0]; index: number }) => {
+const ProductCard = ({ product, index, isActive }: { product: typeof products[0]; index: number; isActive: boolean }) => {
   const cardRef = useRef<HTMLDivElement>(null)
   
   useEffect(() => {
@@ -69,55 +69,62 @@ const ProductCard = ({ product, index }: { product: typeof products[0]; index: n
   
   const cardStyle: React.CSSProperties = {
     backgroundColor: 'white',
-    borderRadius: '10px',
+    borderRadius: '0',
     overflow: 'hidden',
     boxShadow: '0 10px 30px rgba(0, 0, 0, 0.1)',
-    transition: 'transform 0.3s ease-out, box-shadow 0.3s ease-out',
+    transition: 'transform 0.3s ease-out, box-shadow 0.3s ease-out, opacity 0.8s ease-out',
     transform: 'perspective(1000px) rotateY(0deg) rotateX(0deg)',
-    marginTop: index % 2 === 0 ? '0' : '30px',
     height: '100%',
+    opacity: isActive ? 1 : 0.4,
     display: 'flex',
     flexDirection: 'column'
   }
   
   const imageStyle: React.CSSProperties = {
     width: '100%',
-    height: '200px',
+    height: '400px',
     objectFit: 'cover',
     transform: 'scale(1)',
-    transition: 'transform 0.5s ease'
+    transition: 'transform 0.8s ease'
   }
   
   const contentStyle: React.CSSProperties = {
     padding: '20px',
     flexGrow: 1,
     display: 'flex',
-    flexDirection: 'column'
+    flexDirection: 'column',
+    backgroundColor: 'white'
   }
   
   const titleStyle: React.CSSProperties = {
     margin: '0 0 10px 0',
-    fontSize: '1.5rem',
+    fontSize: '1.8rem',
     color: '#5d342f',
-    fontWeight: 'bold'
+    fontWeight: '500',
+    fontFamily: '"Playfair Display", serif',
+    letterSpacing: '0.5px'
   }
   
   const descStyle: React.CSSProperties = {
     margin: '0 0 20px 0',
     color: '#666',
     lineHeight: 1.6,
-    flexGrow: 1
+    flexGrow: 1,
+    fontSize: '1rem',
+    fontWeight: '300'
   }
   
   const footerStyle: React.CSSProperties = {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 'auto'
+    marginTop: 'auto',
+    paddingTop: '15px',
+    borderTop: '1px solid rgba(0,0,0,0.05)'
   }
   
   const priceStyle: React.CSSProperties = {
-    fontSize: '1.25rem',
+    fontSize: '1.5rem',
     fontWeight: 'bold',
     color: '#5d342f'
   }
@@ -126,10 +133,13 @@ const ProductCard = ({ product, index }: { product: typeof products[0]; index: n
     backgroundColor: '#a05c4a',
     color: 'white',
     border: 'none',
-    padding: '8px 16px',
-    borderRadius: '20px',
+    padding: '12px 24px',
+    fontSize: '0.9rem',
     cursor: 'pointer',
-    transition: 'background-color 0.3s ease, transform 0.2s ease'
+    transition: 'background-color 0.3s ease, transform 0.2s ease',
+    letterSpacing: '1px',
+    fontWeight: '500',
+    textTransform: 'uppercase'
   }
   
   const handleMouseOver = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -143,7 +153,7 @@ const ProductCard = ({ product, index }: { product: typeof products[0]; index: n
   }
   
   const handleImageHover = (e: React.MouseEvent<HTMLImageElement>) => {
-    e.currentTarget.style.transform = 'scale(1.1)'
+    e.currentTarget.style.transform = 'scale(1.05)'
   }
   
   const handleImageLeave = (e: React.MouseEvent<HTMLImageElement>) => {
@@ -181,6 +191,8 @@ const ProductCard = ({ product, index }: { product: typeof products[0]; index: n
 
 const FeaturedProducts = () => {
   const sectionRef = useRef<HTMLElement>(null)
+  const [activeProductIndex, setActiveProductIndex] = useState<number | null>(null)
+  const titleRef = useRef<HTMLHeadingElement>(null)
   
   useEffect(() => {
     const handleScroll = () => {
@@ -194,20 +206,25 @@ const FeaturedProducts = () => {
         // 计算滚动进度
         const scrollProgress = 1 - (rect.top / window.innerHeight)
         
-        // 查找所有卡片
-        const cards = sectionRef.current.querySelectorAll('.product-card')
+        // 确定激活的产品
+        const cardHeight = window.innerHeight * 0.7
+        const triggerPoint = window.innerHeight * 0.5
         
-        // 为每个卡片应用动画
-        cards.forEach((card, index) => {
-          const delay = index * 0.1
-          const translateY = Math.max(0, 50 * (1 - Math.min(1, scrollProgress - delay)))
-          const opacity = Math.min(1, Math.max(0, (scrollProgress - delay) * 2))
-          
-          if (card instanceof HTMLElement) {
-            card.style.transform = `translateY(${translateY}px)`
-            card.style.opacity = opacity.toString()
-          }
-        })
+        if (scrollProgress < 0.3) {
+          setActiveProductIndex(null)
+        } else {
+          // 计算每个产品卡片的位置
+          const cards = document.querySelectorAll('.product-card')
+          cards.forEach((card, index) => {
+            const cardRect = card.getBoundingClientRect()
+            const cardCenter = cardRect.top + cardRect.height / 2
+            
+            // 如果卡片中心点接近视口中心，激活该卡片
+            if (Math.abs(cardCenter - triggerPoint) < cardHeight / 2) {
+              setActiveProductIndex(index)
+            }
+          })
+        }
       }
     }
     
@@ -220,48 +237,77 @@ const FeaturedProducts = () => {
   }, [])
   
   const sectionStyle: React.CSSProperties = {
-    padding: '80px 0',
-    backgroundColor: 'rgba(250, 246, 242, 0.8)',
+    padding: '120px 0 80px 0',
+    backgroundColor: '#faf6f2',
     position: 'relative',
     overflow: 'hidden'
   }
   
   const containerStyle: React.CSSProperties = {
-    maxWidth: '1200px',
+    maxWidth: '1400px',
     margin: '0 auto',
-    padding: '0 20px'
+    padding: '0 40px',
+    position: 'relative'
+  }
+  
+  const titleContainerStyle: React.CSSProperties = {
+    textAlign: 'center',
+    marginBottom: '80px',
+    position: 'relative'
   }
   
   const titleStyle: React.CSSProperties = {
-    textAlign: 'center',
-    fontSize: 'clamp(2rem, 5vw, 2.5rem)',
-    marginBottom: '60px',
+    fontSize: 'clamp(2.5rem, 5vw, 3.5rem)',
     color: '#5d342f',
+    fontFamily: '"Playfair Display", serif',
+    fontWeight: '600',
+    letterSpacing: '1px',
+    display: 'inline-block',
     position: 'relative'
+  }
+  
+  const titleUnderlineStyle: React.CSSProperties = {
+    position: 'absolute',
+    bottom: '-10px',
+    left: '10%',
+    width: '80%',
+    height: '1px',
+    backgroundColor: '#a05c4a',
+    opacity: 0.5
   }
   
   const gridStyle: React.CSSProperties = {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-    gap: '30px'
+    gridTemplateColumns: 'repeat(3, 1fr)',
+    gap: '40px',
+    position: 'relative'
   }
   
   return (
     <section ref={sectionRef} style={sectionStyle}>
       <div style={containerStyle}>
-        <h2 style={titleStyle}>Our Featured Beans</h2>
+        <div style={titleContainerStyle}>
+          <h2 ref={titleRef} style={titleStyle}>
+            Our Featured Beans
+            <span style={titleUnderlineStyle}></span>
+          </h2>
+        </div>
         <div style={gridStyle}>
           {products.map((product, index) => (
             <div 
               key={product.id} 
               className="product-card"
               style={{
-                opacity: 0,
-                transform: 'translateY(50px)',
+                opacity: 1,
+                transform: 'translateY(0)',
                 transition: 'opacity 0.6s ease-out, transform 0.6s ease-out'
               }}
             >
-              <ProductCard product={product} index={index} />
+              <ProductCard 
+                product={product} 
+                index={index} 
+                isActive={activeProductIndex === index}
+              />
             </div>
           ))}
         </div>
