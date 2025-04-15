@@ -138,6 +138,11 @@ const ProductCard = ({ product, index, isActive }: { product: typeof products[0]
     e.currentTarget.style.transform = 'translateY(0)'
   }
   
+  // 处理点击按钮跳转到小红书商品链接
+  const handleBuyClick = () => {
+    window.open('https://www.xiaohongshu.com/goods-detail/67fb65698c174700011cb988?xsec_token=XBsmEDLVPFKh4OuZpif7O4JwB67rgaAdN-ewQ0QTilP90=&xsec_source=app_share&instation_link=xhsdiscover%3A%2F%2Fgoods_detail%2F67fb65698c174700011cb988%3Ftrade_ext%3DeyJjaGFubmVsSW5mbyI6bnVsbCwiZHNUb2tlbkluZm8iOm51bGwsInNoYXJlTGluayI6Imh0dHBzOi8vd3d3LnhpYW9ob25nc2h1LmNvbS9nb29kcy1kZXRhaWwvNjdmYjY1Njk4YzE3NDcwMDAxMWNiOTg4P2FwcHVpZD01ZTQ5Mzk3MjAwMDAwMDAwMDEwMDg0YzgiLCJsaXZlSW5mbyI6bnVsbCwic2hvcEluZm8iOm51bGwsImdvb2RzTm90ZUluZm8iOm51bGwsImNoYXRJbmZvIjpudWxsLCJzZWFyY2hJbmZvIjpudWxsLCJwcmVmZXIiOm51bGx9%26rn%3Dtrue&xhsshare=CopyLink&appuid=5e49397200000000010084c8&apptime=1744721335', '_blank')
+  }
+  
   return (
     <div ref={cardRef} style={cardStyle} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave} className="bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-300">
       <div style={imageContainerStyle} className="overflow-hidden">
@@ -158,9 +163,10 @@ const ProductCard = ({ product, index, isActive }: { product: typeof products[0]
             style={buttonStyle}
             onMouseOver={handleMouseOver}
             onMouseOut={handleMouseOut}
+            onClick={handleBuyClick}
             className="bg-amber-800 text-white px-6 py-3 text-sm uppercase tracking-wider font-medium transition-all hover:bg-amber-900 hover:-translate-y-0.5"
           >
-            Add to Cart
+            Buy
           </button>
         </div>
       </div>

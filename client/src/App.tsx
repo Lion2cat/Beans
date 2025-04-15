@@ -496,7 +496,7 @@ function App() {
               <Route path="*" element={<NotFound />} />
             </Routes>
           </main>
-        </div>
+      </div>
       </div>
     </Router>
   )
