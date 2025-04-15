@@ -1,6 +1,44 @@
+import { useEffect, useRef } from 'react'
+
 const Hero = () => {
-  const heroStyle = {
-    position: 'relative' as const,
+  const heroRef = useRef<HTMLDivElement>(null)
+  
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!heroRef.current) return
+      
+      // 计算滚动进度
+      const rect = heroRef.current.getBoundingClientRect()
+      const scrollProgress = 1 - (rect.bottom / window.innerHeight)
+      
+      // 应用视差效果
+      if (scrollProgress >= 0 && scrollProgress <= 1) {
+        if (heroRef.current.querySelector('.hero-content')) {
+          const content = heroRef.current.querySelector('.hero-content') as HTMLElement
+          content.style.transform = `translateY(${scrollProgress * 50}px)`
+          content.style.opacity = `${1 - scrollProgress}`
+        }
+        
+        if (heroRef.current.querySelector('.hero-image')) {
+          const image = heroRef.current.querySelector('.hero-image') as HTMLElement
+          image.style.transform = `scale(${1 + scrollProgress * 0.2}) translateY(${scrollProgress * -30}px)`
+        }
+      }
+    }
+    
+    // 添加滚动监听
+    window.addEventListener('scroll', handleScroll)
+    
+    // 初始调用一次确保状态正确
+    handleScroll()
+    
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+    }
+  }, [])
+
+  const heroStyle: React.CSSProperties = {
+    position: 'relative',
     height: '100vh',
     display: 'flex',
     alignItems: 'center',
@@ -8,71 +46,97 @@ const Hero = () => {
     overflow: 'hidden'
   }
 
-  const bgStyle = {
-    position: 'absolute' as const,
-    inset: 0,
+  const bgImageStyle: React.CSSProperties = {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
     backgroundColor: '#5d342f',
     backgroundSize: 'cover',
-    backgroundPosition: 'center'
+    backgroundPosition: 'center',
+    zIndex: 1
   }
 
-  const overlayStyle = {
-    position: 'absolute' as const,
-    inset: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)'
+  const overlayStyle: React.CSSProperties = {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    zIndex: 2
   }
 
-  const contentStyle = {
-    position: 'relative' as const,
-    zIndex: 10,
-    textAlign: 'center' as const,
+  const contentStyle: React.CSSProperties = {
+    position: 'relative',
+    zIndex: 3,
+    textAlign: 'center',
     color: 'white',
-    padding: '0 16px'
+    padding: '0 20px',
+    maxWidth: '800px',
+    transition: 'transform 0.1s ease-out, opacity 0.1s ease-out'
   }
 
-  const titleStyle = {
-    fontSize: '3rem',
+  const headingStyle: React.CSSProperties = {
+    fontSize: 'clamp(2.5rem, 8vw, 4.5rem)',
+    marginBottom: '20px',
     fontWeight: 'bold',
-    marginBottom: '1.5rem'
+    textShadow: '0 2px 4px rgba(0, 0, 0, 0.3)'
   }
 
-  const descStyle = {
-    fontSize: '1.25rem',
-    marginBottom: '2rem',
-    maxWidth: '42rem',
-    marginLeft: 'auto',
-    marginRight: 'auto'
+  const paragraphStyle: React.CSSProperties = {
+    fontSize: 'clamp(1rem, 3vw, 1.2rem)',
+    marginBottom: '30px',
+    maxWidth: '600px',
+    margin: '0 auto 30px',
+    lineHeight: 1.5
   }
 
-  const buttonStyle = {
+  const buttonStyle: React.CSSProperties = {
     backgroundColor: '#a05c4a',
     color: 'white',
-    padding: '0.75rem 2rem',
-    borderRadius: '9999px',
-    fontSize: '1.125rem',
-    transition: 'background-color 0.3s',
     border: 'none',
-    cursor: 'pointer'
+    padding: '12px 30px',
+    fontSize: '1rem',
+    borderRadius: '50px',
+    cursor: 'pointer',
+    transition: 'background-color 0.3s ease, transform 0.2s ease',
+    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
   }
 
   return (
-    <section style={heroStyle}>
-      {/* Background with fallback color */}
-      <div style={bgStyle} />
-      
-      {/* Overlay */}
+    <section ref={heroRef} style={heroStyle}>
+      <div className="hero-image" style={bgImageStyle}>
+        <img 
+          src="/images/hero-bg.jpg" 
+          alt="Coffee beans background"
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            objectPosition: 'center'
+          }}
+        />
+      </div>
       <div style={overlayStyle} />
-      
-      {/* Content */}
-      <div style={contentStyle}>
-        <h1 style={titleStyle}>
-          Discover the Perfect Brew
-        </h1>
-        <p style={descStyle}>
+      <div className="hero-content" style={contentStyle}>
+        <h1 style={headingStyle}>INTRANSIGENT</h1>
+        <p style={paragraphStyle}>
           Experience the finest coffee beans from around the world, 
           carefully selected and roasted to perfection.
         </p>
-        <button style={buttonStyle}>
+        <button 
+          style={buttonStyle}
+          onMouseOver={(e) => {
+            e.currentTarget.style.backgroundColor = '#85493d'
+            e.currentTarget.style.transform = 'translateY(-2px)'
+          }}
+          onMouseOut={(e) => {
+            e.currentTarget.style.backgroundColor = '#a05c4a'
+            e.currentTarget.style.transform = 'translateY(0)'
+          }}
+        >
           Explore Our Menu
         </button>
       </div>
