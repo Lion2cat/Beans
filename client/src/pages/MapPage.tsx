@@ -122,9 +122,10 @@ const MapPage: React.FC = () => {
     height: '200%',
     position: 'relative',
     backgroundImage: 'url("/images/coffee-map-bg.jpg")',
-    backgroundColor: '#e8e0d9',
+    backgroundColor: '#e8d7c3', // Fallback color if image is not available
     backgroundSize: 'cover',
     backgroundPosition: 'center',
+    boxShadow: 'inset 0 0 100px rgba(0,0,0,0.1)',
     transition: mapLoaded ? 'opacity 0.6s ease' : 'none',
     opacity: mapLoaded ? 1 : 0,
   };
@@ -133,20 +134,20 @@ const MapPage: React.FC = () => {
     position: 'absolute',
     top: region.location.top,
     left: region.location.left,
-    width: selectedRegion === region.id ? '30px' : '22px',
-    height: selectedRegion === region.id ? '30px' : '22px',
+    width: selectedRegion === region.id ? '45px' : '35px',
+    height: selectedRegion === region.id ? '45px' : '35px',
     borderRadius: '50%',
     backgroundColor: selectedRegion === region.id ? '#5d342f' : '#a05c4a',
-    border: '2px solid #fff',
+    border: '3px solid #fff',
     transform: `translate(-50%, -50%) scale(${mapLoaded ? 1 : 0})`,
     transformOrigin: 'center',
     cursor: 'pointer',
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    boxShadow: selectedRegion === region.id ? '0 0 0 5px rgba(93, 52, 47, 0.3)' : '0 2px 10px rgba(0,0,0,0.2)',
+    boxShadow: selectedRegion === region.id ? '0 0 0 8px rgba(93, 52, 47, 0.3)' : '0 4px 15px rgba(0,0,0,0.25)',
     zIndex: selectedRegion === region.id ? 3 : 2,
-    transition: 'all 0.3s ease',
+    transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
   });
 
   const headerStyle: React.CSSProperties = {
@@ -169,7 +170,7 @@ const MapPage: React.FC = () => {
 
   const detailCardStyle: React.CSSProperties = {
     position: 'absolute',
-    top: '50%',
+    top: '20%',
     right: '2rem',
     transform: selectedRegion ? 'translateY(-50%)' : 'translateY(-50%) translateX(100%)',
     width: '350px',
@@ -310,100 +311,171 @@ const MapPage: React.FC = () => {
         </motion.div>
       </motion.div>
 
-      <div style={{
-        position: 'absolute',
-        bottom: '2rem',
-        left: '2rem',
-        padding: '1rem 1.5rem',
-        background: 'white',
-        boxShadow: '0 10px 30px rgba(0, 0, 0, 0.1)',
-        zIndex: 10,
-        maxWidth: '280px',
-        opacity: mapLoaded ? 1 : 0,
-        transform: mapLoaded ? 'translateY(0)' : 'translateY(20px)',
-        transition: 'opacity 0.8s ease, transform 0.8s ease',
-        borderRadius: '8px'
-      }}>
-        <p style={{
-          fontFamily: '"Playfair Display", serif',
-          fontSize: '1rem',
-          color: '#5d342f',
-          marginBottom: '1rem',
-          fontStyle: 'italic'
-        }}>
+      <motion.div
+        style={{
+          position: 'absolute',
+          bottom: '2rem',
+          left: '2rem',
+          padding: '1.2rem 1.5rem',
+          background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.7))',
+          backdropFilter: 'blur(5px)',
+          boxShadow: '0 10px 30px rgba(0, 0, 0, 0.08)',
+          zIndex: 10,
+          maxWidth: '280px',
+          borderRadius: '8px',
+          border: '1px solid rgba(255, 255, 255, 0.8)'
+        }}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ 
+          opacity: mapLoaded ? 1 : 0,
+          y: mapLoaded ? 0 : 20
+        }}
+        transition={{ delay: 0.6, duration: 0.6 }}
+        whileHover={{ 
+          y: -5, 
+          boxShadow: '0 15px 30px rgba(0, 0, 0, 0.12)',
+          background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.85))'
+        }}
+      >
+        <motion.p 
+          style={{
+            fontFamily: '"Playfair Display", serif',
+            fontSize: '1rem',
+            color: '#5d342f',
+            margin: 0,
+            fontStyle: 'italic'
+          }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.9 }}
+        >
           Drag to explore coffee regions. Click on markers to learn more.
-        </p>
-      </div>
+        </motion.p>
+      </motion.div>
 
       <AnimatePresence>
-        <div style={detailCardStyle}>
-          {selectedRegionData && (
-            <>
-              <img 
-                src={selectedRegionData.image} 
-                alt={selectedRegionData.name} 
-                style={imageStyle} 
-              />
-              <div style={infoStyle}>
-                <h3 style={regionNameStyle}>{selectedRegionData.name}</h3>
-                <p style={descriptionStyle}>{selectedRegionData.description}</p>
-                
-                <div style={flavorCardStyle}>
-                  <div style={{ position: 'relative' }}>
-                    <span style={flavorTitleStyle}>FLAVOR</span>
-                    <ul style={flavorListStyle}>
-                      {selectedRegionData.flavors.map((flavor, idx) => (
-                        <li key={idx}>{flavor}</li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-                
-                <h4 style={{ fontSize: '1.1rem', marginBottom: '10px', color: '#5d342f' }}>Info</h4>
-                
-                <div style={infoRowStyle}>
-                  <span style={infoLabelStyle}>Altitude</span>
-                  <span style={infoValueStyle}>{selectedRegionData.altitude}</span>
-                </div>
-                
-                <div style={infoRowStyle}>
-                  <span style={infoLabelStyle}>Varietal</span>
-                  <span style={infoValueStyle}>{selectedRegionData.varieties.join(', ')}</span>
-                </div>
-                
-                <div style={infoRowStyle}>
-                  <span style={infoLabelStyle}>Process</span>
-                  <span style={infoValueStyle}>{selectedRegionData.process}</span>
-                </div>
-                
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px' }}>
-                  <button
-                    style={{
-                      ...buttonStyle,
-                      flex: 1,
-                      marginRight: '10px'
+        {selectedRegion && (
+          <motion.div 
+            style={detailCardStyle}
+            initial={{ opacity: 0, x: 100 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 100 }}
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            className="region-detail"
+          >
+            {selectedRegionData && (
+              <>
+                <motion.img 
+                  src={selectedRegionData.image} 
+                  alt={selectedRegionData.name} 
+                  style={imageStyle}
+                  whileHover={{ scale: 1.05 }}
+                  transition={{ duration: 0.3 }}
+                />
+                <motion.div 
+                  style={infoStyle}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                >
+                  <h3 style={regionNameStyle}>{selectedRegionData.name}</h3>
+                  <p style={descriptionStyle}>{selectedRegionData.description}</p>
+                  
+                  <motion.div 
+                    style={flavorCardStyle}
+                    whileHover={{ 
+                      boxShadow: '0 10px 20px rgba(160, 92, 74, 0.15)',
+                      y: -5 
                     }}
-                    onClick={() => window.location.href = `/beans?region=${selectedRegionData.id}`}
                   >
-                    View Beans
-                  </button>
-                  <button
-                    style={{
-                      ...buttonStyle,
-                      backgroundColor: 'transparent',
-                      color: '#a05c4a',
-                      border: '1px solid #a05c4a',
-                      flex: 1,
-                    }}
-                    onClick={() => setSelectedRegion(null)}
+                    <div style={{ position: 'relative' }}>
+                      <span style={flavorTitleStyle}>FLAVOR</span>
+                      <ul style={flavorListStyle}>
+                        {selectedRegionData.flavors.map((flavor, idx) => (
+                          <motion.li 
+                            key={idx}
+                            initial={{ opacity: 0, x: -10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 0.3 + idx * 0.1 }}
+                          >
+                            {flavor}
+                          </motion.li>
+                        ))}
+                      </ul>
+                    </div>
+                  </motion.div>
+                  
+                  <motion.h4 
+                    style={{ fontSize: '1.1rem', marginBottom: '10px', color: '#5d342f' }}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.4 }}
                   >
-                    Close
-                  </button>
-                </div>
-              </div>
-            </>
-          )}
-        </div>
+                    Info
+                  </motion.h4>
+                  
+                  {[
+                    { label: 'Altitude', value: selectedRegionData.altitude },
+                    { label: 'Varietal', value: selectedRegionData.varieties.join(', ') },
+                    { label: 'Process', value: selectedRegionData.process }
+                  ].map((item, idx) => (
+                    <motion.div 
+                      key={idx}
+                      style={infoRowStyle}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.5 + idx * 0.1 }}
+                    >
+                      <span style={infoLabelStyle}>{item.label}</span>
+                      <span style={infoValueStyle}>{item.value}</span>
+                    </motion.div>
+                  ))}
+                  
+                  <motion.div 
+                    style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px' }}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.8 }}
+                  >
+                    <motion.button
+                      style={{
+                        ...buttonStyle,
+                        flex: 1,
+                        marginRight: '10px'
+                      }}
+                      whileHover={{ 
+                        backgroundColor: '#85493d',
+                        y: -3,
+                        boxShadow: '0 5px 15px rgba(160, 92, 74, 0.3)' 
+                      }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => window.location.href = `/beans?region=${selectedRegionData.id}`}
+                    >
+                      View Beans
+                    </motion.button>
+                    <motion.button
+                      style={{
+                        ...buttonStyle,
+                        backgroundColor: 'transparent',
+                        color: '#a05c4a',
+                        border: '1px solid #a05c4a',
+                        flex: 1,
+                      }}
+                      whileHover={{ 
+                        backgroundColor: 'rgba(160, 92, 74, 0.1)',
+                        y: -3
+                      }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => setSelectedRegion(null)}
+                    >
+                      Close
+                    </motion.button>
+                  </motion.div>
+                </motion.div>
+              </>
+            )}
+          </motion.div>
+        )}
       </AnimatePresence>
     </div>
   );

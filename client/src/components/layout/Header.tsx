@@ -72,10 +72,10 @@ const Header = () => {
     right: 0,
     zIndex: 100,
     padding: `${20 - scrollProgress * 10}px 0`,
-    backgroundColor: `rgba(255, 255, 255, ${getBackgroundOpacity()})`,
-    backdropFilter: 'blur(8px)',
-    boxShadow: scrollProgress > 0.05 ? '0 4px 20px rgba(0, 0, 0, 0.1)' : 'none',
-    transition: 'padding 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease'
+    backgroundColor: scrollProgress > 0.05 ? 'rgba(255, 255, 255, 0.6)' : 'transparent',
+    backdropFilter: scrollProgress > 0.05 ? 'blur(10px)' : 'none',
+    boxShadow: scrollProgress > 0.05 ? '0 4px 20px rgba(0, 0, 0, 0.08)' : 'none',
+    transition: 'padding 0.3s ease, background-color 0.3s ease, backdrop-filter 0.3s ease, box-shadow 0.3s ease'
   }
   
   const containerStyle: React.CSSProperties = {
@@ -127,11 +127,11 @@ const Header = () => {
     fontSize: '1.2rem',
     fontWeight: 'bold',
     letterSpacing: '1px',
-    color: scrollProgress > 0.1 ? '#5d342f' : 'white',
+    color: scrollProgress > 0.05 ? '#5d342f' : 'white',
     textTransform: 'uppercase',
     fontFamily: '"Playfair Display", serif',
     transition: 'color 0.3s ease',
-    textShadow: scrollProgress > 0.1 ? 'none' : '0 1px 3px rgba(0, 0, 0, 0.3)'
+    textShadow: scrollProgress < 0.05 ? '0 1px 3px rgba(0, 0, 0, 0.3)' : 'none'
   }
   
   const navStyle: React.CSSProperties = {
@@ -142,12 +142,12 @@ const Header = () => {
   
   const linkStyle: React.CSSProperties = {
     textDecoration: 'none',
-    color: scrollProgress > 0.1 ? '#5d342f' : 'white',
+    color: scrollProgress > 0.05 ? '#5d342f' : 'white',
     fontWeight: 500,
     fontSize: '0.9rem',
     position: 'relative',
     padding: '5px 0',
-    textShadow: scrollProgress > 0.1 ? 'none' : '0 1px 3px rgba(0, 0, 0, 0.3)',
+    textShadow: scrollProgress < 0.05 ? '0 1px 3px rgba(0, 0, 0, 0.3)' : 'none',
     transition: 'color 0.3s ease, text-shadow 0.3s ease',
     textTransform: 'uppercase',
     letterSpacing: '1px'
@@ -161,7 +161,7 @@ const Header = () => {
   const mobileNavBtnStyle: React.CSSProperties = {
     background: 'transparent',
     border: 'none',
-    color: scrollProgress > 0.1 ? '#5d342f' : 'white',
+    color: scrollProgress > 0.05 ? '#5d342f' : 'white',
     fontSize: '1.5rem',
     cursor: 'pointer',
     padding: '5px',
@@ -181,9 +181,7 @@ const Header = () => {
   
   // 生成伪随机链接色调变化，基于滚动位置
   const getLinkHoverColor = (index: number) => {
-    const baseHue = 10 // 基本色调
-    const variation = (scrollProgress * 10) + (index * 5) // 基于滚动和链接索引的变化
-    return `hsl(${baseHue + variation}, 60%, 45%)`
+    return scrollProgress > 0.05 ? '#a05c4a' : '#f8d0c0'
   }
   
   // 媒体查询效果通过JavaScript模拟
@@ -289,7 +287,8 @@ const Header = () => {
       {isMenuOpen && (
         <div 
           style={{
-            backgroundColor: 'white',
+            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+            backdropFilter: 'blur(10px)',
             position: 'absolute',
             top: '100%',
             left: 0,
@@ -314,7 +313,7 @@ const Header = () => {
                 transition: 'background-color 0.3s ease'
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = '#f5ede6'
+                e.currentTarget.style.backgroundColor = 'rgba(160, 92, 74, 0.1)'
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.backgroundColor = 'transparent'
