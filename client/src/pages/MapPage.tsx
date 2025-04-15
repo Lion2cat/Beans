@@ -1,5 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, useMotionValue, AnimatePresence } from 'framer-motion';
+import { createGlobalStyle } from 'styled-components';
+import ScrollIndicator from '../components/transitions/ScrollIndicator';
 
 interface CoffeeRegion {
   id: string;
@@ -22,6 +24,13 @@ const MapPage: React.FC = () => {
   const x = useMotionValue(0);
   const y = useMotionValue(0);
   const [mapLoaded, setMapLoaded] = useState(false);
+  const mapRef = useRef<HTMLDivElement>(null)
+  const titleRef = useRef<HTMLHeadingElement>(null)
+  const descriptionRef = useRef<HTMLParagraphElement>(null)
+  const [isDragging, setIsDragging] = useState(false)
+  const [startPosition, setStartPosition] = useState({ x: 0, y: 0 })
+  const [translatePosition, setTranslatePosition] = useState({ x: 0, y: 0 })
+  const [scrolled, setScrolled] = useState(false)
 
   // Sample coffee regions data with more detailed information
   const regions: CoffeeRegion[] = [
@@ -269,13 +278,106 @@ const MapPage: React.FC = () => {
     marginTop: '15px'
   };
 
+  useEffect(() => {
+    // Check if page has been scrolled to this section
+    const handleScroll = () => {
+      if (mapRef.current) {
+        const rect = mapRef.current.getBoundingClientRect()
+        const isVisible = rect.top < window.innerHeight * 0.8 && rect.bottom > 0
+        setScrolled(isVisible)
+      }
+    }
+    
+    window.addEventListener('scroll', handleScroll)
+    // Initial check
+    handleScroll()
+    
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+    }
+  }, [])
+  
+  // Parallax effect for title and description
+  useEffect(() => {
+    const handleParallax = () => {
+      if (titleRef.current && descriptionRef.current && mapRef.current) {
+        const mapRect = mapRef.current.getBoundingClientRect()
+        const progress = 1 - (mapRect.top / window.innerHeight)
+        
+        if (progress > 0 && progress < 2) {
+          titleRef.current.style.transform = `translateY(${progress * -15}px)`
+          descriptionRef.current.style.transform = `translateY(${progress * -10}px)`
+        }
+      }
+    }
+    
+    window.addEventListener('scroll', handleParallax)
+    return () => window.removeEventListener('scroll', handleParallax)
+  }, [])
+
   return (
-    <div style={containerStyle}>
-      <div style={headerStyle}>
-        <h1 style={titleStyle}>Coffee Bean Origins</h1>
-        <p style={{ color: '#666', maxWidth: '500px' }}>
-          Explore our interactive map to discover the unique coffee growing regions around the world
-          and learn about the distinctive characteristics of each region's beans.
+    <div 
+      ref={mapRef}
+      className="map-page-container"
+      style={{
+        width: '100%',
+        height: '100vh',
+        position: 'relative',
+        overflow: 'hidden',
+        backgroundColor: '#FBF7F3',
+        transition: 'opacity 0.6s ease',
+      }}
+    >
+      <div 
+        className="map-content"
+        style={{
+          position: 'absolute',
+          left: '50%',
+          top: '50%',
+          transform: 'translate(-50%, -50%)',
+          textAlign: 'center',
+          zIndex: 2,
+          pointerEvents: 'none',
+          width: '100%',
+          padding: '0 20px',
+          opacity: scrolled ? 1 : 0.3,
+          transition: 'opacity 0.8s ease-out, transform 0.8s ease-out',
+        }}
+      >
+        <h2 
+          ref={titleRef}
+          style={{
+            fontSize: '3rem',
+            color: '#5C3D2E',
+            marginBottom: '1rem',
+            fontFamily: '"Playfair Display", serif',
+            fontWeight: 700,
+            letterSpacing: '1px',
+            opacity: scrolled ? 1 : 0,
+            transform: 'translateY(20px)',
+            transition: 'opacity 0.8s ease, transform 1s ease',
+            willChange: 'opacity, transform',
+          }}
+        >
+          Our Growing Regions
+        </h2>
+        <p 
+          ref={descriptionRef}
+          style={{
+            fontSize: '1.2rem',
+            color: '#6F5E53',
+            maxWidth: '600px',
+            margin: '0 auto',
+            lineHeight: 1.6,
+            fontFamily: '"Lora", serif',
+            opacity: scrolled ? 1 : 0,
+            transform: 'translateY(15px)',
+            transition: 'opacity 0.8s ease 0.2s, transform 1s ease 0.2s',
+            willChange: 'opacity, transform',
+          }}
+        >
+          Explore the regions where we source our premium coffee beans. 
+          Each location imparts unique flavors based on soil, altitude, and climate.
         </p>
       </div>
 
@@ -310,6 +412,13 @@ const MapPage: React.FC = () => {
           ))}
         </motion.div>
       </motion.div>
+
+      {/* Use the reusable ScrollIndicator component */}
+      <ScrollIndicator 
+        targetSectionId="products-section"
+        isVisible={scrolled}
+        text="Discover our products"
+      />
 
       <motion.div
         style={{
@@ -480,5 +589,97 @@ const MapPage: React.FC = () => {
     </div>
   );
 };
+
+const MapStyles = createGlobalStyle`
+  .map-page-container {
+    position: relative;
+    z-index: 1;
+  }
+  
+  .map-wrapper {
+    cursor: grab;
+    position: relative;
+    transition: transform 0.1s ease-out;
+    will-change: transform;
+  }
+  
+  .map-wrapper:active {
+    cursor: grabbing;
+  }
+  
+  .region-marker {
+    position: absolute;
+    width: 24px;
+    height: 24px;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    background-color: #A05C4A;
+    border: 2px solid #FFFFFF;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    z-index: 2;
+  }
+  
+  .region-marker:hover {
+    transform: translate(-50%, -50%) scale(1.2);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  }
+  
+  .region-marker::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: rgba(160, 92, 74, 0.2);
+    transform: translate(-50%, -50%) scale(0);
+    transition: transform 0.6s ease;
+  }
+  
+  .region-marker:hover::after {
+    transform: translate(-50%, -50%) scale(1);
+  }
+  
+  .region-info {
+    position: absolute;
+    background-color: #FFFFFF;
+    border-radius: 8px;
+    padding: 12px 16px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    width: 220px;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    pointer-events: none;
+    z-index: 3;
+  }
+  
+  .region-marker:hover + .region-info {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  
+  /* Animation for entry/exit */
+  @keyframes fadeInMap {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .map-container {
+    animation: fadeInMap 1.2s ease forwards;
+  }
+  
+  [data-scroll-progress] .map-wrapper {
+    transition: transform 0.8s cubic-bezier(0.25, 0.1, 0.25, 1);
+  }
+`
 
 export default MapPage;

@@ -170,6 +170,9 @@ const FeaturedProducts = () => {
   const [activeIndex, setActiveIndex] = useState<number>(-1)
   const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 })
   const sectionRef = useRef<HTMLDivElement>(null)
+  const [isVisible, setIsVisible] = useState(false)
+  const [entryDirection, setEntryDirection] = useState<'up' | 'down'>('down')
+  const titleRef = useRef<HTMLHeadingElement>(null)
   
   const handleMouse = useCallback((event: MouseEvent) => {
     if (sectionRef.current) {
@@ -186,48 +189,80 @@ const FeaturedProducts = () => {
     const handleScroll = () => {
       if (!sectionRef.current) return
       
-      // 获取部分的边界
+      // Get section boundaries
       const rect = sectionRef.current.getBoundingClientRect()
       
-      // 检查部分是否在视口中
+      // Check if section is in the viewport
       if (rect.top < window.innerHeight && rect.bottom > 0) {
-        // 计算滚动进度
+        // Calculate scroll progress
         const scrollProgress = 1 - (rect.top / window.innerHeight)
         
-        // 确定激活的产品
+        // Determine active product
         const cardHeight = window.innerHeight * 0.7
         const triggerPoint = window.innerHeight * 0.5
         
         if (scrollProgress < 0.3) {
           setActiveIndex(-1)
         } else {
-          // 计算每个产品卡片的位置
+          // Calculate position of each product card
           const cards = document.querySelectorAll('.product-card')
           cards.forEach((card, index) => {
             const cardRect = card.getBoundingClientRect()
             const cardCenter = cardRect.top + cardRect.height / 2
             
-            // 如果卡片中心点接近视口中心，激活该卡片
+            // If card center is close to viewport center, activate that card
             if (Math.abs(cardCenter - triggerPoint) < cardHeight / 2) {
               setActiveIndex(index)
             }
           })
         }
+
+        // Set visibility and determine entry direction for animations
+        setIsVisible(true)
+        if (rect.top > window.innerHeight / 2) {
+          setEntryDirection('down')
+        } else {
+          setEntryDirection('up')
+        }
+      } else {
+        if (rect.top > window.innerHeight) {
+          setIsVisible(false)
+        }
       }
     }
     
     window.addEventListener('scroll', handleScroll)
-    handleScroll() // 初始调用
+    handleScroll() // Initial call
     
     return () => {
       window.removeEventListener('scroll', handleScroll)
     }
   }, [])
+
+  // Add a subtle effect to the title when scrolling from map
+  useEffect(() => {
+    const handleTitleEffect = () => {
+      if (titleRef.current && sectionRef.current) {
+        const rect = sectionRef.current.getBoundingClientRect()
+        const progress = 1 - (rect.top / window.innerHeight)
+        
+        if (progress > 0 && progress < 1) {
+          titleRef.current.style.transform = `translateY(${(1 - progress) * 30}px)`
+          titleRef.current.style.opacity = `${Math.min(1, progress * 2)}`
+        }
+      }
+    }
+    
+    window.addEventListener('scroll', handleTitleEffect)
+    return () => window.removeEventListener('scroll', handleTitleEffect)
+  }, [])
   
   const sectionStyle: React.CSSProperties = {
     width: '100%',
     padding: '80px 0 80px 0',
-    backgroundColor: '#f7f5f3'
+    backgroundColor: '#f7f5f3',
+    position: 'relative',
+    overflow: 'hidden'
   }
   
   const containerStyle: React.CSSProperties = {
@@ -238,7 +273,9 @@ const FeaturedProducts = () => {
   
   const titleContainerStyle: React.CSSProperties = {
     textAlign: 'center',
-    marginBottom: '50px'
+    marginBottom: '50px',
+    position: 'relative',
+    zIndex: 2
   }
   
   const sectionTitleStyle: React.CSSProperties = {
@@ -246,14 +283,20 @@ const FeaturedProducts = () => {
     fontWeight: '600',
     color: '#5d342f',
     margin: '0',
-    fontFamily: '"Playfair Display", serif'
+    fontFamily: '"Playfair Display", serif',
+    position: 'relative',
+    transition: 'transform 0.8s ease-out, opacity 0.8s ease-out',
+    willChange: 'transform, opacity'
   }
   
   const gridStyle: React.CSSProperties = {
     display: 'grid',
     gridTemplateColumns: 'repeat(3, 1fr)',
     gap: '20px',
-    position: 'relative'
+    position: 'relative',
+    opacity: isVisible ? 1 : 0,
+    transform: `translateY(${isVisible ? 0 : entryDirection === 'down' ? 50 : -50}px)`,
+    transition: 'opacity 0.8s ease, transform 0.8s ease'
   }
   
   const cursorBlobStyle: React.CSSProperties = {
@@ -266,12 +309,29 @@ const FeaturedProducts = () => {
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     pointerEvents: 'none'
   }
+
+  // Decorative background elements that enhance the transition
+  const decorativeElementStyle: React.CSSProperties = {
+    position: 'absolute',
+    top: '-50px',
+    left: '0',
+    width: '100%',
+    height: '100px',
+    background: 'linear-gradient(to bottom, rgba(251,247,243,1) 0%, rgba(247,245,243,0) 100%)',
+    pointerEvents: 'none',
+    zIndex: 1,
+    opacity: isVisible ? 1 : 0,
+    transition: 'opacity 0.8s ease',
+  }
   
   return (
     <section ref={sectionRef} style={sectionStyle}>
+      {/* Decorative transition element */}
+      <div style={decorativeElementStyle} />
+      
       <div style={containerStyle}>
         <div style={titleContainerStyle}>
-          <h2 style={sectionTitleStyle}>Our Featured Beans</h2>
+          <h2 ref={titleRef} style={sectionTitleStyle}>Our Featured Beans</h2>
         </div>
         <div style={gridStyle}>
           {products.map((product, index) => (

@@ -5,10 +5,63 @@ import { Link } from 'react-router-dom'
 const CUBE_COUNT = 4
 
 const Header = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [scrolled, setScrolled] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
+  const headerRef = useRef<HTMLDivElement>(null)
+  const lastScrollY = useRef(0)
+  const ticking = useRef(false)
   const [scrollProgress, setScrollProgress] = useState(0)
   const [hoveredCube, setHoveredCube] = useState<number | null>(null)
   const logoRef = useRef<HTMLDivElement>(null)
+  
+  useEffect(() => {
+    const handleScroll = () => {
+      lastScrollY.current = window.scrollY
+      
+      if (!ticking.current) {
+        window.requestAnimationFrame(() => {
+          if (lastScrollY.current > 50) {
+            setScrolled(true)
+          } else {
+            setScrolled(false)
+          }
+          ticking.current = false
+        })
+        
+        ticking.current = true
+      }
+    }
+
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+    }
+  }, [])
+  
+  useEffect(() => {
+    const handleResize = () => {
+      const mobileNav = document.querySelector('.mobile-nav-btn') as HTMLElement
+      const desktopNav = document.querySelector('.desktop-nav') as HTMLElement
+      
+      if (window.innerWidth < 768) {
+        if (mobileNav) mobileNav.style.display = 'block'
+        if (desktopNav) desktopNav.style.display = menuOpen ? 'flex' : 'none'
+      } else {
+        if (mobileNav) mobileNav.style.display = 'none'
+        if (desktopNav) desktopNav.style.display = 'flex'
+      }
+    }
+    
+    window.addEventListener('resize', handleResize)
+    handleResize() // 初始调用
+    
+    return () => window.removeEventListener('resize', handleResize)
+  }, [menuOpen])
+  
+  const toggleMenu = () => {
+    setMenuOpen(!menuOpen)
+  }
   
   // 监听滚动事件
   useEffect(() => {
@@ -65,17 +118,25 @@ const Header = () => {
     return Math.min(0.9, scrollProgress * 2)
   }
   
-  const headerStyle: React.CSSProperties = {
-    position: 'fixed',
+  const headerStyle = {
+    position: 'fixed' as const,
     top: 0,
     left: 0,
-    right: 0,
-    zIndex: 100,
-    padding: `${20 - scrollProgress * 10}px 0`,
-    backgroundColor: scrollProgress > 0.05 ? 'rgba(255, 255, 255, 0.6)' : 'transparent',
-    backdropFilter: scrollProgress > 0.05 ? 'blur(10px)' : 'none',
-    boxShadow: scrollProgress > 0.05 ? '0 4px 20px rgba(0, 0, 0, 0.08)' : 'none',
-    transition: 'padding 0.3s ease, background-color 0.3s ease, backdrop-filter 0.3s ease, box-shadow 0.3s ease'
+    width: '100%',
+    padding: '1rem 2rem',
+    zIndex: 1000,
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: scrolled 
+      ? 'rgba(255, 255, 255, 0.6)' 
+      : 'rgba(255, 255, 255, 0)',
+    backdropFilter: scrolled ? 'blur(10px)' : 'blur(0px)',
+    boxShadow: scrolled 
+      ? '0 4px 15px rgba(0, 0, 0, 0.05)' 
+      : 'none',
+    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+    color: scrolled ? '#333' : '#fff',
   }
   
   const containerStyle: React.CSSProperties = {
@@ -84,7 +145,85 @@ const Header = () => {
     padding: '0 40px',
     display: 'flex',
     alignItems: 'center',
-    justifyContent: 'space-between'
+    justifyContent: 'space-between',
+    width: '100%'
+  }
+  
+  const logoStyle = {
+    fontSize: '1.5rem',
+    fontWeight: 700,
+    letterSpacing: '1px',
+    textDecoration: 'none',
+    color: 'inherit',
+    display: 'flex',
+    alignItems: 'center',
+    transition: 'transform 0.3s ease',
+    transform: scrolled ? 'scale(0.9)' : 'scale(1)',
+    transformOrigin: 'left center',
+  }
+  
+  const navStyle = {
+    display: 'flex',
+    gap: '2rem',
+    '@media (max-width: 768px)': {
+      display: 'none',
+    },
+  }
+  
+  const navLinkStyle = {
+    textDecoration: 'none',
+    color: 'inherit',
+    fontWeight: 500,
+    position: 'relative' as const,
+    padding: '0.5rem 0',
+    transition: 'all 0.3s ease',
+  }
+  
+  const linkHoverStyle = {
+    '&::after': {
+      content: '""',
+      position: 'absolute' as const,
+      bottom: 0,
+      left: 0,
+      width: '0%',
+      height: '2px',
+      backgroundColor: '#a05c4a',
+      transition: 'width 0.3s ease',
+    },
+    '&:hover::after': {
+      width: '100%',
+    },
+    '&:hover': {
+      color: '#a05c4a',
+    },
+  }
+  
+  const burgerStyle = {
+    display: 'none',
+    '@media (max-width: 768px)': {
+      display: 'block',
+    },
+    cursor: 'pointer',
+    zIndex: 1001,
+  }
+  
+  const mobileMenuStyle = {
+    position: 'fixed' as const,
+    top: 0,
+    right: 0,
+    width: '70%',
+    height: '100vh',
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    transform: menuOpen ? 'translateX(0)' : 'translateX(100%)',
+    transition: 'transform 0.3s ease-in-out',
+    display: 'flex',
+    flexDirection: 'column' as const,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: '2rem',
+    padding: '2rem',
+    zIndex: 1000,
+    boxShadow: '-5px 0 15px rgba(0, 0, 0, 0.1)',
   }
   
   const logoContainerStyle: React.CSSProperties = {
@@ -134,27 +273,8 @@ const Header = () => {
     textShadow: scrollProgress < 0.05 ? '0 1px 3px rgba(0, 0, 0, 0.3)' : 'none'
   }
   
-  const navStyle: React.CSSProperties = {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '40px'
-  }
-  
-  const linkStyle: React.CSSProperties = {
-    textDecoration: 'none',
-    color: scrollProgress > 0.05 ? '#5d342f' : 'white',
-    fontWeight: 500,
-    fontSize: '0.9rem',
-    position: 'relative',
-    padding: '5px 0',
-    textShadow: scrollProgress < 0.05 ? '0 1px 3px rgba(0, 0, 0, 0.3)' : 'none',
-    transition: 'color 0.3s ease, text-shadow 0.3s ease',
-    textTransform: 'uppercase',
-    letterSpacing: '1px'
-  }
-  
   const activeLinkStyle: React.CSSProperties = {
-    ...linkStyle,
+    ...navLinkStyle,
     fontWeight: 'bold'
   }
   
@@ -184,27 +304,6 @@ const Header = () => {
     return scrollProgress > 0.05 ? '#a05c4a' : '#f8d0c0'
   }
   
-  // 媒体查询效果通过JavaScript模拟
-  useEffect(() => {
-    const handleResize = () => {
-      const mobileNav = document.querySelector('.mobile-nav-btn') as HTMLElement
-      const desktopNav = document.querySelector('.desktop-nav') as HTMLElement
-      
-      if (window.innerWidth < 768) {
-        if (mobileNav) mobileNav.style.display = 'block'
-        if (desktopNav) desktopNav.style.display = isMenuOpen ? 'flex' : 'none'
-      } else {
-        if (mobileNav) mobileNav.style.display = 'none'
-        if (desktopNav) desktopNav.style.display = 'flex'
-      }
-    }
-    
-    window.addEventListener('resize', handleResize)
-    handleResize() // 初始调用
-    
-    return () => window.removeEventListener('resize', handleResize)
-  }, [isMenuOpen])
-  
   const navLinks = [
     { path: '/menu', label: 'Menu' },
     { path: '/about', label: 'About' },
@@ -212,7 +311,7 @@ const Header = () => {
   ]
   
   return (
-    <header style={headerStyle}>
+    <header ref={headerRef} style={headerStyle}>
       <div style={progressBarStyle}></div>
       <div style={containerStyle}>
         <Link to="/" style={logoContainerStyle}>
@@ -230,94 +329,33 @@ const Header = () => {
         </Link>
         
         {/* 桌面导航 */}
-        <nav className="desktop-nav" style={navStyle}>
-          {navLinks.map((link, index) => (
+        <nav style={navStyle as any}>
+          {navLinks.map((link) => (
             <Link 
               key={link.path}
               to={link.path}
-              style={link.path === window.location.pathname ? activeLinkStyle : linkStyle}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.color = getLinkHoverColor(index)
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.color = scrollProgress > 0.1 ? '#5d342f' : 'white'
-              }}
+              style={{ ...navLinkStyle, ...linkHoverStyle } as any}
             >
               {link.label}
-              <span 
-                style={{
-                  position: 'absolute',
-                  bottom: 0,
-                  left: '50%',
-                  width: '0',
-                  height: '1px',
-                  backgroundColor: '#a05c4a',
-                  transition: 'width 0.3s ease, left 0.3s ease',
-                }}
-                className="link-underline"
-                onMouseEnter={(e) => {
-                  if (e.currentTarget.parentElement) {
-                    e.currentTarget.style.width = '100%'
-                    e.currentTarget.style.left = '0'
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (e.currentTarget.parentElement) {
-                    e.currentTarget.style.width = '0'
-                    e.currentTarget.style.left = '50%'
-                  }
-                }}
-              />
             </Link>
           ))}
         </nav>
         
         {/* 移动导航按钮 */}
-        <button 
-          className="mobile-nav-btn"
-          style={mobileNavBtnStyle}
-          onClick={() => setIsMenuOpen(!isMenuOpen)}
-          aria-label="Toggle menu"
-        >
-          {isMenuOpen ? '✕' : '☰'}
-        </button>
+        <div style={burgerStyle as any} onClick={toggleMenu}>
+          <span>Menu</span>
+        </div>
       </div>
       
       {/* 移动导航菜单 */}
-      {isMenuOpen && (
-        <div 
-          style={{
-            backgroundColor: 'rgba(255, 255, 255, 0.9)',
-            backdropFilter: 'blur(10px)',
-            position: 'absolute',
-            top: '100%',
-            left: 0,
-            right: 0,
-            padding: '20px',
-            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '15px',
-            animation: 'slideDown 0.3s ease-out'
-          }}
-        >
+      {menuOpen && (
+        <div style={mobileMenuStyle as any}>
           {navLinks.map((link) => (
             <Link
               key={link.path}
               to={link.path}
-              style={{
-                color: '#5d342f',
-                textDecoration: 'none',
-                padding: '10px',
-                borderRadius: '5px',
-                transition: 'background-color 0.3s ease'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = 'rgba(160, 92, 74, 0.1)'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'transparent'
-              }}
+              style={{ ...navLinkStyle, ...linkHoverStyle } as any}
+              onClick={() => setMenuOpen(false)}
             >
               {link.label}
             </Link>

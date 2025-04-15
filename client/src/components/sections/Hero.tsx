@@ -1,17 +1,22 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import ScrollIndicator from '../transitions/ScrollIndicator'
 
 const Hero = () => {
   const heroRef = useRef<HTMLDivElement>(null)
+  const [scrolled, setScrolled] = useState(false)
   
   useEffect(() => {
     const handleScroll = () => {
       if (!heroRef.current) return
       
-      // 计算滚动进度
+      // Calculate scroll progress
       const rect = heroRef.current.getBoundingClientRect()
       const scrollProgress = 1 - (rect.bottom / window.innerHeight)
       
-      // 应用视差效果
+      // Check if scrolled enough to show indicators
+      setScrolled(scrollProgress > 0.1)
+      
+      // Apply parallax effect
       if (scrollProgress >= 0 && scrollProgress <= 1) {
         if (heroRef.current.querySelector('.hero-content')) {
           const content = heroRef.current.querySelector('.hero-content') as HTMLElement
@@ -26,10 +31,10 @@ const Hero = () => {
       }
     }
     
-    // 添加滚动监听
+    // Add scroll listener
     window.addEventListener('scroll', handleScroll)
     
-    // 初始调用一次确保状态正确
+    // Initial call to ensure state is correct
     handleScroll()
     
     return () => {
@@ -140,6 +145,13 @@ const Hero = () => {
           Explore Our Menu
         </button>
       </div>
+      
+      {/* Add scroll indicator to guide to next section */}
+      <ScrollIndicator 
+        targetSectionId="map-section"
+        isVisible={scrolled}
+        text="Discover our origins"
+      />
     </section>
   )
 }
